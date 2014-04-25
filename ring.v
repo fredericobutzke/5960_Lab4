@@ -169,7 +169,7 @@ endmodule // c_element_nand_r0a
 module latch32 (d, q, clk);
    input             clk;
    input      [31:0] d;
-   output reg [31:0] q;
+   output     [31:0] q;
 
    wire 	     ck_;
    
