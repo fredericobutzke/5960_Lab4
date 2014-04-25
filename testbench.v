@@ -32,7 +32,7 @@ module tb;
 
 
    // The Design Under Test:  la for frequency test...
-   ring #(2) dut (.rr(rr), .la(la), .lr(lr), .ra(ra), .rst(rst));
+   ring #(3) dut (.rr(rr), .la(la), .lr(lr), .ra(ra), .rst(rst));
 
 
    ///////////////////////////////////////////////////////////////
@@ -82,10 +82,18 @@ module tb;
    end
 
    always @ la begin
-      if (~rst) begin
-         #1 
+      if (~rst & lr) begin
+         #2
          lr = ~la;
       end
+      else 
+         if (~rst) begin
+            #30
+            rst = 1'b1;
+            #reset_time
+            rst = 1'b0;
+            lr = 1'b1;
+         end
    end
 
 

@@ -1,17 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.45 (w)1999-2012 BSI
-[*] Fri Apr 25 20:06:06 2014
+[*] Fri Apr 25 20:32:30 2014
 [*]
 [dumpfile] "/home/fredericobutzke/Desktop/Relative Timed Asynchronous Design/Labs/Lab4/tb.vcd"
-[dumpfile_mtime] "Fri Apr 25 19:52:54 2014"
-[dumpfile_size] 10099
+[dumpfile_mtime] "Fri Apr 25 20:30:39 2014"
+[dumpfile_size] 12119
 [savefile] "/home/fredericobutzke/Desktop/Relative Timed Asynchronous Design/Labs/Lab4/wave_ring4.gtkw"
 [timestart] 0
 [size] 1920 1056
 [pos] -1 -1
-*-13.000000 4710 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-14.000000 10320 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.dut.
+[treeopen] tb.dut.c4.
 [sst_width] 223
 [signals_width] 125
 [sst_expanded] 1
@@ -31,12 +32,15 @@ tb.dut.ra
 tb.dut.c4.lr
 tb.dut.c4.la
 tb.dut.c4.lri
-tb.dut.c4.lr
+@29
+tb.dut.c4.lai
+@28
 tb.dut.c4.rr
 tb.dut.c4.ra
-@201
--*******
+@22
+tb.dut.c4.c64.count[6:0]
 @200
+-*******
 -C3
 @28
 tb.dut.c3.lr
