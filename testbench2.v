@@ -15,11 +15,11 @@
 module tb;
 
    // simulation variables
-   specparam hs_delay		  = 0.150;
+   parameter hs_delay		  = 0.150;
 
-   specparam reset_time           = 5;
-   specparam break_time		  = 500;
-   specparam step_time            = 1;
+   parameter reset_time           = 5;
+   parameter break_time		     = 500;
+   parameter step_time            = 1;
    integer   done                 = 0;
 
    // input cycle time calculations
@@ -30,12 +30,12 @@ module tb;
    reg rst = 1'b0;
    reg lr  = 1'b0;
    reg ra  = 1'b0;
-   reg [127:0] DI;
+   reg [95:0] DI;
    wire [31:0] DO;
-   integer     outfile, infile;
+   integer     outfile, infile, statusI ;
 
    // The Design Under Test:  la for frequency test...
-   ring dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
+   ring #(3) dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
 
 
    ///////////////////////////////////////////////////////////////
@@ -59,6 +59,18 @@ module tb;
    // multiple syntax for reset:
    initial begin
 
+      $dumpfile("tb2.vcd");
+      $dumpvars(0, tb);
+      
+
+      // load in new data stream
+      outfile = $fopen("Verilogoutputs.txt", "w");
+      infile  = $fopen("Veriloginputs.txt", "r");
+      
+      // read in initial value to allow test for $feof() on last read
+     statusI = $fscanf(infile,"%h", DI);
+
+
       #0.001;
       rst = 1'b1;
       lr = 1'b0;
@@ -77,13 +89,6 @@ module tb;
 	    $fclose(infile);
 	    $finish;
 	 end
-
-	 // load in new data stream
-	 outfile = $fopen("Verilogoutputs", "w");
-	 infile  = $fopen("Veriloginputs", "r");
-      
-	 // read in initial value to allow test for $feof() on last read
-	 $fscanf(infile, "%h", DI);
 
 	 // perform handshake and data transfer
 	 lr = 1'b1;
@@ -119,10 +124,10 @@ module tb;
       end
       #(hs_delay);
       ra = 1'b1;
+      $fwrite(outfile, "%08X\n", DO);
    end
 
    always @ (negedge rr) begin
-      $fwrite(outfile, "%08X\n", DO);
       #(hs_delay);
       ra = 1'b0;
    end

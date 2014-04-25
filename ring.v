@@ -1,30 +1,50 @@
 
-module ring (rr, la, lr, ra, rst);
+module ring (rr, la, dout, lr, ra, din, rst);
   
    input  lr, ra, rst;
    output rr, la;
 
    parameter counter = 7 ;
+   parameter stages = 3 ;
+   parameter word_length = 32 ;
+
+   input [word_length*stages-1:0] din ;
+   output [word_length-1:0] dout ;
+
+
+   wire [word_length-1 : 0] d0, d1, d2, d3 ;
+   wire [word_length-1 : 0] q0, q1, q2, q3 ;
 
    wire  r0, r1, r2, r3, r4, r5;
    wire  a0, a1, a2, a3, a4, a5;
    wire  ck0, ck1, ck2, ck3;
+   wire  clk0, clk1, clk2, clk3;
 
-   //latch32      l0 (.d(), .q(), .clk(ck0));
+   //d0 = rst ? din[] : q3 ;
+   assign d0 = q3 ;
+   latchD32      l0 (.d(d0), .q(q0), .clk(ck0));
    C300R3044    c0 (.lr(r0), .la(a0), .rr(r1), .ra(a1), .ck(ck0), .rst(rst));
 
-   //latch32      l0 (.d(), .q(), .clk(ck1));
-   C300R3044  c1 (.lr(r1), .la(a1), .rr(r2), .ra(a2), .ck(ck1), .rst(rst));
+   assign d1 = lr|rst ? din[31:0] : q0 ;
+   latchD32           l1 (.d(d1), .q(q1), .clk(clk1));
+   C300R3044r1_load lc1 (.clk(clk1), .ld_run(la), .local_clk(ck1), .rst(rst)) ;
+   C300R3044r1       c1 (.lr(r1), .la(a1), .rr(r2), .ra(a2), .ck(ck1), .rst(rst));
 
-   //latch32      l0 (.d(), .q(), .clk(ck2));
-   C300R3044    c2 (.lr(r2), .la(a2), .rr(r3), .ra(a3), .ck(ck2), .rst(rst));
+   assign d2 = lr|rst ? din[63:32] : q1 ;
+   latchD32           l2 (.d(d2), .q(q2), .clk(clk2));
+   C300R3044r1_load lc2 (.clk(clk2), .ld_run(la), .local_clk(ck2), .rst(rst)) ;
+   C300R3044r1       c2 (.lr(r2), .la(a2), .rr(r3), .ra(a3), .ck(ck2), .rst(rst));
 
-   //latch32      l0 (.d(), .q(), .clk(ck3));
-   C300R3044r1  c3 (.lr(r3), .la(a3), .rr(r4), .ra(a4), .ck(ck3), .rst(rst));
+   assign d3 = lr|rst ? din[95:64] : q2 ;
+   latchD32           l3 (.d(d3), .q(q3), .clk(clk3));
+   C300R3044r1_load lc3 (.clk(clk3), .ld_run(la), .local_clk(ck3), .rst(rst)) ;
+   C300R3044r1       c3 (.lr(r3), .la(a3), .rr(r4), .ra(a4), .ck(ck3), .rst(rst));
 
-   go64 #(counter) c4 (.lr(lr), .la(la), .lri(r4), .lai(a4), .rr(r5), .ra(a5), .rst(rst));
+   go64 #(counter) g64 (.lr(lr), .la(la), .lri(r4), .lai(a4), .rr(r5), .ra(a5), .rst(rst));
 
-   bcast_fork c5 (.bi(r5), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a5));
+   bcast_fork fk (.bi(r5), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a5));
+
+   assign dout = q3 ;
 
 endmodule // ring4
 
@@ -285,3 +305,29 @@ module sigma1 (A, Z);
 
 endmodule // s1
 
+module C300R3044r1_load(clk, ld_run, local_clk, rst);
+
+   input ld_run, local_clk, rst ;
+   output clk ;
+
+   wire w0, w1 ;
+
+   OAI21_C g640 (.A1(w0), .A2(ld_run), .B(local_clk), .Z(w1));
+   assign w0  = ~(w1 | rst);
+   assign clk = w0 ;
+
+endmodule
+
+
+module latchD32(d, q, clk);
+
+input [31:0] d ;
+input clk;
+output reg [31:0] q;
+
+always @ (d, clk)
+if (~clk) begin
+  q <= d;
+end
+
+endmodule //End Of Module dlatch_reset
