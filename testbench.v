@@ -16,7 +16,7 @@ module tb;
 
    // simulation variables
    parameter reset_time           = 5;
-   parameter run_time             = 20;
+   parameter run_time             = 100;
    parameter step_time            = 1;
 
    // input cycle time calculations
@@ -25,11 +25,14 @@ module tb;
 
    // initialize primary inputs to the block
    reg rst = 1'b0;
+   reg lr = 1'b0;
+   reg ra = 1'b0;
 
+   wire la, rr ;
 
 
    // The Design Under Test:  la for frequency test...
-   ring dut (.rst(rst), .la(la));
+   ring #(2) dut (.rr(rr), .la(la), .lr(lr), .ra(ra), .rst(rst));
 
 
    ///////////////////////////////////////////////////////////////
@@ -46,6 +49,7 @@ module tb;
       rst = 1'b1;
       #reset_time
       rst = 1'b0;
+      lr = 1'b1;
       
       // evaluate termination conditions
       forever begin
@@ -70,6 +74,20 @@ module tb;
 	        last_la_up_time = $realtime;
       end
    end
+
+
+   always @ rr begin
+      #1 
+      ra = rr ;
+   end
+
+   always @ la begin
+      if (~rst) begin
+         #1 
+         lr = ~la;
+      end
+   end
+
 
 
 endmodule // testbench

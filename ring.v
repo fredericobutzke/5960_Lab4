@@ -1,41 +1,34 @@
-// Top level design
-// For now this only has a controller.
-module ring (rst, la);
-   input  rst;
-   output la;
 
-   // create four token ring
-   wire  r0, a0, r1, a1, r2, a2, r3, a3, ck0, ck1, ck2, ck3;
+module ring (rr, la, lr, ra, rst);
+  
+   input  lr, ra, rst;
+   output rr, la;
 
-   assign la = a0;
+   parameter counter = 7 ;
+
+   wire  r0, r1, r2, r3, r4, r5;
+   wire  a0, a1, a2, a3, a4, a5;
+   wire  ck0, ck1, ck2, ck3;
 
    //latch32      l0 (.d(), .q(), .clk(ck0));
    C300R3044    c0 (.lr(r0), .la(a0), .rr(r1), .ra(a1), .ck(ck0), .rst(rst));
 
    //latch32      l0 (.d(), .q(), .clk(ck1));
-   C300R3044r1  c1 (.lr(r1), .la(a1), .rr(r2), .ra(a2), .ck(ck1), .rst(rst));
+   C300R3044  c1 (.lr(r1), .la(a1), .rr(r2), .ra(a2), .ck(ck1), .rst(rst));
 
    //latch32      l0 (.d(), .q(), .clk(ck2));
    C300R3044    c2 (.lr(r2), .la(a2), .rr(r3), .ra(a3), .ck(ck2), .rst(rst));
 
    //latch32      l0 (.d(), .q(), .clk(ck3));
-   C300R3044r1  c3 (.lr(r3), .la(a3), .rr(r0), .ra(a0), .ck(ck3), .rst(rst));
+   C300R3044r1  c3 (.lr(r3), .la(a3), .rr(r4), .ra(a4), .ck(ck3), .rst(rst));
+
+   go64 #(counter) c4 (.lr(lr), .la(la), .lri(r4), .lai(a4), .rr(r5), .ra(a5), .rst(rst));
+
+   bcast_fork c5 (.bi(r5), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a5));
 
 endmodule // ring4
 
    
-
-
-
-
-
-
-
-
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////
 //////////////////////// Included IP blocks ///////////////////////////
@@ -118,8 +111,8 @@ module bcast_fork (bi, bo0, bo1, ji0, ji1, jo);
 
    // The type of c-element will dictate the timing requirements
    c_element_nand   bcastc  (.y(jo), .a(ji0), .b(ji1));
-   assign bo0 = bi;
-   assign bo1 = bi;
+   assign #1 bo0 = bi;
+   assign #1 bo1 = bi;
 
 endmodule // bcast_fork
 
@@ -232,12 +225,14 @@ module go64 (lr, la, lri, lai, rr, ra, rst);
 
    wire   done, rr_;
 
+   parameter counter = 7 ;
+
    c_element_nand_r0a celt (.a(~done), .b(lr), .y(la), .rst_(~rst));
 
-   count64            c64  (.clk(rr), .done(done), .rst(rst));
+   count64  # (counter)  c64  (.clk(rr), .done(done), .rst(rst));
 
    OAI21_C            g640 (.A1(la), .A2(rr), .B(lri), .Z(rr_));
-   assign rr  = ~(rr_ | rst);
+   assign #1 rr  = ~(rr_ | rst);
    assign lai = ra;
 
 endmodule // go64
@@ -251,8 +246,9 @@ module count64 (clk, done, rst);
 
    reg [6:0] count;
 
+   parameter counter = 7 ;
    // change this to count to smaller 2^n value for debugging
-   assign done = count[3];
+   assign done = count == counter;
 
    always @ (posedge clk or posedge rst) begin
       if (rst) count <= 0;
