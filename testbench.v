@@ -15,9 +15,9 @@
 module tb;
 
    // simulation variables
-   specparam reset_time           = 5;
-   specparam run_time             = 20;
-   specparam step_time            = 1;
+   parameter reset_time           = 5;
+   parameter run_time             = 20;
+   parameter step_time            = 1;
 
    // input cycle time calculations
    real cycle_time      = 0.0;
@@ -39,30 +39,35 @@ module tb;
 
    // multiple syntax for reset:
    initial begin
-      rst = 1'b1;
+   
+      $dumpfile("tb.vcd");
+      $dumpvars(0, tb);
 
-      #(reset_time);
+      rst = 1'b1;
+      #reset_time
       rst = 1'b0;
       
       // evaluate termination conditions
       forever begin
-	 #(step_time);
+         #step_time
 
-	 if ($realtime >= run_time) begin
-	    $display("Terminating simulation due to run time limit\n");
-	    $display("Max Cycle Time:           %.3f", cycle_time);
-	    $finish;
-	 end
+         if ($realtime >= run_time) begin
+      	    $display("Terminating simulation due to run time limit\n");
+      	    $display("Max Cycle Time:           %.3f", cycle_time);
+      	    $finish;
+      	end
+      
       end
-   end // initial begin
    
-
+   end // initial begin
+  
+ 
    always @ (posedge la) begin
       if (last_la_up_time > 0) begin
-	 cycle_time = $realtime - last_la_up_time;
+	        cycle_time = $realtime - last_la_up_time;
       end
       if (rst == 1'b0) begin
-	 last_la_up_time = $realtime;
+	        last_la_up_time = $realtime;
       end
    end
 

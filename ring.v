@@ -23,8 +23,7 @@ module ring (rst, la);
 
 endmodule // ring4
 
-
-
+   
 
 
 
@@ -66,13 +65,16 @@ module C300R3044 (lr, la, rr, ra, ck, rst);
    input  lr, ra, rst;
    output la, rr, ck;
 
-   wire   la_, rr_, ra_, y_, y;
+   wire   la_, rr_, ra_, y_, y, rrx, lax;
+
+   assign #1 rr = rrx;
+   assign #1 la = lax;
 
    // 180nm:
    AOI33_C  C300R30440 (.A1(lr), .A2(ra_), .A3(y_), .B1(lr), .B2(la), .B3(1'b1), .Z(la_));
-   NOR2_C   C300R30441 (.A(la_), .B(rst), .Z(la));
+   NOR2_C   C300R30441 (.A(la_), .B(rst), .Z(lax));
    AOI33_C  C300R30442 (.A1(lr), .A2(ra_), .A3(y_), .B1(ra_), .B2(rr), .B3(1'b1), .Z(rr_));
-   NOR2_C   C300R30443 (.A(rr_), .B(rst), .Z(rr));
+   NOR2_C   C300R30443 (.A(rr_), .B(rst), .Z(rrx));
    OR2_C    C300R30444 (.A(la), .B(rr), .Z(y));
    INVERT_C C300R30445 (.A(y), .Z(y_));
    INVERT_C C300R30446 (.A(ra), .Z(ra_));
@@ -88,13 +90,16 @@ module C300R3044r1 (lr, la, rr, ra, ck, rst);
    input  lr, ra, rst;
    output la, rr, ck;
 
-   wire   la_, rr_, ra_, y_, rst_, y;
+   wire   la_, rr_, ra_, y_, rst_, y, rrx, lax;
+
+   assign #1 rr = rrx;
+   assign #1 la = lax;
 
    // 180nm:
    AOI33_C  C300R3044r10 (.A1(lr), .A2(ra_), .A3(y_), .B1(lr), .B2(la), .B3(1'b1), .Z(la_));
-   NOR2_C   C300R3044r11 (.A(la_), .B(rst), .Z(la));
+   NOR2_C   C300R3044r11 (.A(la_), .B(rst), .Z(lax));
    AOI33_C  C300R3044r12 (.A1(lr), .A2(ra_), .A3(y_), .B1(ra_), .B2(rr), .B3(1'b1), .Z(rr_));
-   NAND2_C  C300R3044r13 (.A(rr_), .B(rst_), .Z(rr));
+   NAND2_C  C300R3044r13 (.A(rr_), .B(rst_), .Z(rrx));
    OR2_C    C300R3044r14 (.A(la), .B(rr), .Z(y));
    INVERT_C C300R3044r15 (.A(y), .Z(y_));
    INVERT_C C300R3044r16 (.A(ra), .Z(ra_));
