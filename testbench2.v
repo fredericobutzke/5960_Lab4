@@ -31,8 +31,9 @@ module tb;
    reg lr  = 1'b0;
    reg ra  = 1'b0;
    reg [511:0] DI;
+   reg [31:0] exp;
    wire [31:0] DO;
-   integer     outfile, infile, statusI ;
+   integer     outfile, infile, goldenfile, statusI, status0 ;
 
    // The Design Under Test:  la for frequency test...
    ring #(64) dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
@@ -66,6 +67,7 @@ module tb;
       // load in new data stream
       outfile = $fopen("Verilogoutputs.txt", "w");
       infile  = $fopen("Veriloginputs.txt", "r");
+      goldenfile = $fopen("Goldenoutputs.txt","r");
       
       // read in initial value to allow test for $feof() on last read
      statusI = $fscanf(infile,"%h", DI);
@@ -79,17 +81,17 @@ module tb;
       #(reset_time);
       rst = 1'b0;
       
-	 // perform handshake and data transfer
-	 lr = 1'b1;
-	 while (la != 1'b1) begin
-	    #0.001;
-	 end
-	 #(hs_delay);
-	 lr = 1'b0;
+   	 // perform handshake and data transfer
+   	 lr = 1'b1;
+   	 while (la != 1'b1) begin
+   	    #0.001;
+   	 end
+   	 #(hs_delay);
+   	 lr = 1'b0;
 
-    #(break_time);
+       #(break_time);
 
-    $finish;
+       $finish;
 
    end // initial begin
    
@@ -104,6 +106,18 @@ module tb;
       #(hs_delay);
       ra = 1'b1;
       $fwrite(outfile, "%08X\n", DO);
+
+      statusI = $fscanf(goldenfile,"%h\n",exp);
+
+      if (DO !== exp) begin
+         $display("%0dns Error : input and output does not match",$time);
+         $display("       Got  %h",DO);
+         $display("       Exp  %h",exp);
+      end else begin
+         $display("%0dns Match : input and output match",$time);
+         $display("       Got  %h",DO);
+         $display("       Exp  %h",exp);
+      end
    end
 
    always @ (negedge rr) begin
