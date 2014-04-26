@@ -12,15 +12,15 @@ module ring (rr, la, dout, lr, ra, din, rst);
    output [word_length-1:0] dout ;
 
 
-   wire [word_length-1 : 0] d0, d1, d2, d3 ;
-   wire [word_length-1 : 0] q0, q1, q2, q3 ;
+   wire [word_length-1 : 0] d0, d1, d2, d3, d4 ;
+   wire [word_length-1 : 0] q0, q1, q2, q3, q4 ;
 
-   wire  r0, r1, r2, r3, r4, r5;
-   wire  a0, a1, a2, a3, a4, a5;
-   wire  ck0, ck1, ck2, ck3;
+   wire  r0, r1, r2, r3, r4, r5, r6;
+   wire  a0, a1, a2, a3, a4, a5, a6;
+   wire  ck0, ck1, ck2, ck3, ck4;
    wire  clk0, clk1, clk2, clk3;
 
-   sigma0 s0 (q3, d0) ;
+   sigma0 s0 (q4, d0) ;
 
    //d0 = rst ? din[] : q3 ;
    latchD32      l0 (.d(d0), .q(q0), .clk(ck0));
@@ -43,9 +43,12 @@ module ring (rr, la, dout, lr, ra, din, rst);
 
    go64 #(counter) g64 (.lr(lr), .la(la), .lri(r4), .lai(a4), .rr(r5), .ra(a5), .rst(rst));
 
-   bcast_fork fk (.bi(r5), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a5));
+   latchD32     l4 (.d(q3), .q(q4), .clk(ck4));
+   C300R3044    c4 (.lr(r5), .la(a5), .rr(r6), .ra(a6), .ck(ck4), .rst(rst));
 
-   assign dout = q3 ;
+   bcast_fork fk (.bi(r6), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a6));
+
+   assign dout = q4 ;
 
 endmodule // ring4
 
