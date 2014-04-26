@@ -18,7 +18,7 @@ module tb;
    parameter hs_delay		  = 0.150;
 
    parameter reset_time           = 5;
-   parameter break_time		     = 500;
+   parameter break_time		     = 5000;
    parameter step_time            = 1;
    integer   done                 = 0;
 
@@ -30,12 +30,12 @@ module tb;
    reg rst = 1'b0;
    reg lr  = 1'b0;
    reg ra  = 1'b0;
-   reg [95:0] DI;
+   reg [511:0] DI;
    wire [31:0] DO;
    integer     outfile, infile, statusI ;
 
    // The Design Under Test:  la for frequency test...
-   ring #(6) dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
+   ring #(64) dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
 
 
    ///////////////////////////////////////////////////////////////
@@ -79,17 +79,6 @@ module tb;
       #(reset_time);
       rst = 1'b0;
       
-      // evaluate termination conditions
-      forever begin
-
-	 if (done) begin
-	    $display("Terminating simulation due to run time limit\n");
-	    $display("Max Cycle Time:           %.3f", cycle_time);
-	    $fclose(outfile);
-	    $fclose(infile);
-	    $finish;
-	 end
-
 	 // perform handshake and data transfer
 	 lr = 1'b1;
 	 while (la != 1'b1) begin
@@ -97,21 +86,11 @@ module tb;
 	 end
 	 #(hs_delay);
 	 lr = 1'b0;
-	 
-	 while (cycle_time < 0.01 || ($realtime - last_rr_up_time) < (3 * cycle_time)) begin
-	    #(step_time);
-	 end
-	 $display("Finished message schedule");
 
-	 if ($feof(infile)) begin
-	    $display("... input stream terminated ...");
-	    done = 1;
-	 end
-	 if ($realtime >= break_time) begin
-	    done = 1;
-	 end
+    #(break_time);
 
-      end
+    $finish;
+
    end // initial begin
    
 

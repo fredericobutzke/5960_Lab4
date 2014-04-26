@@ -4,50 +4,123 @@ module ring (rr, la, dout, lr, ra, din, rst);
    input  lr, ra, rst;
    output rr, la;
 
-   parameter counter = 7 ;
-   parameter stages = 3 ;
+   parameter counter = 64 ;
+   parameter stages = 16 ;
    parameter word_length = 32 ;
 
    input [word_length*stages-1:0] din ;
    output [word_length-1:0] dout ;
 
 
-   wire [word_length-1 : 0] d0, d1, d2, d3, d4 ;
-   wire [word_length-1 : 0] q0, q1, q2, q3, q4 ;
+   wire [word_length-1 : 0] d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16 ;
+   wire [word_length-1 : 0] q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16 ;
 
-   wire  r0, r1, r2, r3, r4, r5, r6;
-   wire  a0, a1, a2, a3, a4, a5, a6;
-   wire  ck0, ck1, ck2, ck3, ck4;
-   wire  clk0, clk1, clk2, clk3;
+   wire  r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18;
+   wire  a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18;
+   wire  ck0, ck1, ck2, ck3, ck4, ck5, ck6, ck7, ck8, ck9, ck10, ck11, ck12, ck13, ck14, ck15 ;
+   wire  clk0, clk1, clk2, clk3, clk4, clk5, clk6, clk7, clk8, clk9, clk10, clk11;
+   wire  clk12, clk13, clk14, clk15, clk16, clk18;
+   wire  w0 ;
+   wire [31:0] f0 ;
+   wire [31:0] s0, s1 ;
 
-   //d0 = rst ? din[] : q3 ;
-   assign d0 = q4 ;
-   latchD32      l0 (.d(d0), .q(q0), .clk(ck0));
-   C300R3044    c0 (.lr(r0), .la(a0), .rr(r1), .ra(a1), .ck(ck0), .rst(rst));
+   sigma0 sig0 (q15, s0);
+   sigma1 sig1 (q2, s1);
 
-   assign d1 = lr|rst ? din[31:0] : q0 ;
+   assign #1 f0 = s0 + s1 + q7 + q16 ;
+
+   //Stage 0
+   assign d0 = lr|rst ? din[31:0] : f0 ;
+   latchD32          l0 (.d(d0), .q(q0), .clk(clk0));
+   C300R3044r1_load lc0 (.clk(clk0), .ld_run(w0), .local_clk(ck0), .rst(rst)) ;
+   C300R3044r1       c0 (.lr(r0), .la(a0), .rr(r1), .ra(a1), .ck(ck0), .rst(rst));
+
+   //Stage 1
+   assign d1 = lr|rst ? din[63:32] : q0 ;
    latchD32           l1 (.d(d1), .q(q1), .clk(clk1));
-   C300R3044r1_load lc1 (.clk(clk1), .ld_run(la), .local_clk(ck1), .rst(rst)) ;
-   C300R3044r1       c1 (.lr(r1), .la(a1), .rr(r2), .ra(a2), .ck(ck1), .rst(rst));
+   C300R3044r1_load  lc1 (.clk(clk1), .ld_run(w0), .local_clk(ck1), .rst(rst)) ;
+   C300R3044r1        c1 (.lr(r1), .la(a1), .rr(r2), .ra(a2), .ck(ck1), .rst(rst));
 
-   assign d2 = lr|rst ? din[63:32] : q1 ;
-   latchD32           l2 (.d(d2), .q(q2), .clk(clk2));
-   C300R3044r1_load lc2 (.clk(clk2), .ld_run(la), .local_clk(ck2), .rst(rst)) ;
+   //Stage 2
+   assign d2 = lr|rst ? din[95:64] : q1 ;
+   latchD32          l2 (.d(d2), .q(q2), .clk(clk2));
+   C300R3044r1_load lc2 (.clk(clk2), .ld_run(w0), .local_clk(ck2), .rst(rst)) ;
    C300R3044r1       c2 (.lr(r2), .la(a2), .rr(r3), .ra(a3), .ck(ck2), .rst(rst));
 
-   assign d3 = lr|rst ? din[95:64] : q2 ;
-   latchD32           l3 (.d(d3), .q(q3), .clk(clk3));
-   C300R3044r1_load lc3 (.clk(clk3), .ld_run(la), .local_clk(ck3), .rst(rst)) ;
+   assign d3 = lr|rst ? din[127:96] : q2 ;
+   latchD32          l3 (.d(d3), .q(q3), .clk(clk3));
+   C300R3044r1_load lc3 (.clk(clk3), .ld_run(w0), .local_clk(ck3), .rst(rst)) ;
    C300R3044r1       c3 (.lr(r3), .la(a3), .rr(r4), .ra(a4), .ck(ck3), .rst(rst));
 
-   go64 #(counter) g64 (.lr(lr), .la(la), .lri(r4), .lai(a4), .rr(r5), .ra(a5), .rst(rst));
+   assign d4 = lr|rst ? din[159:128]: q3 ;
+   latchD32          l4 (.d(d4), .q(q4), .clk(clk4));
+   C300R3044r1_load lc4 (.clk(clk4), .ld_run(w0), .local_clk(ck4), .rst(rst)) ;
+   C300R3044r1       c4 (.lr(r4), .la(a4), .rr(r5), .ra(a5), .ck(ck4), .rst(rst));
 
-   latchD32     l4 (.d(q3), .q(q4), .clk(ck4));
-   C300R3044    c4 (.lr(r5), .la(a5), .rr(r6), .ra(a6), .ck(ck4), .rst(rst));
+   assign d5 = lr|rst ? din[191:160] : q4 ;
+   latchD32          l5 (.d(d5), .q(q5), .clk(clk5));
+   C300R3044r1_load lc5 (.clk(clk5), .ld_run(w0), .local_clk(ck5), .rst(rst)) ;
+   C300R3044r1       c5 (.lr(r5), .la(a5), .rr(r6), .ra(a6), .ck(ck5), .rst(rst));
 
-   bcast_fork fk (.bi(r6), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a6));
+   assign d6 = lr|rst ? din[223:192] : q5 ;
+   latchD32          l6 (.d(d6), .q(q6), .clk(clk6));
+   C300R3044r1_load lc6 (.clk(clk6), .ld_run(w0), .local_clk(ck6), .rst(rst)) ;
+   C300R3044r1       c6 (.lr(r6), .la(a6), .rr(r7), .ra(a7), .ck(ck6), .rst(rst));
 
-   assign dout = q4 ;
+   assign d7 = lr|rst ? din[255:224] : q6 ;
+   latchD32           l7 (.d(d7), .q(q7), .clk(clk7));
+   C300R3044r1_load  lc7 (.clk(clk7), .ld_run(w0), .local_clk(ck7), .rst(rst)) ;
+   C300R3044r1        c7 (.lr(r7), .la(a7), .rr(r8), .ra(a8), .ck(ck7), .rst(rst));
+   
+   assign d8 = lr|rst ? din[287:256] : q7 ;
+   latchD32          l8 (.d(d8), .q(q8), .clk(clk8));
+   C300R3044r1_load lc8 (.clk(clk8), .ld_run(w0), .local_clk(ck8), .rst(rst)) ;
+   C300R3044r1       c8 (.lr(r8), .la(a8), .rr(r9), .ra(a9), .ck(ck8), .rst(rst));
+
+   assign d9 = lr|rst ? din[319:288] : q8 ;
+   latchD32          l9 (.d(d9), .q(q9), .clk(clk9));
+   C300R3044r1_load lc9 (.clk(clk9), .ld_run(w0), .local_clk(ck9), .rst(rst)) ;
+   C300R3044r1       c9 (.lr(r9), .la(a9), .rr(r10), .ra(a10), .ck(ck9), .rst(rst));
+
+   assign d10 = lr|rst ? din[351:320] : q9 ;
+   latchD32          l10 (.d(d10), .q(q10), .clk(clk10));
+   C300R3044r1_load lc10 (.clk(clk10), .ld_run(w0), .local_clk(ck10), .rst(rst)) ;
+   C300R3044r1       c10 (.lr(r10), .la(a10), .rr(r11), .ra(a11), .ck(ck10), .rst(rst));
+
+   assign d11 = lr|rst ? din[383:352] : q10 ;
+   latchD32          l11 (.d(d11), .q(q11), .clk(clk11));
+   C300R3044r1_load lc11 (.clk(clk11), .ld_run(w0), .local_clk(ck11), .rst(rst)) ;
+   C300R3044r1       c11 (.lr(r11), .la(a11), .rr(r12), .ra(a12), .ck(ck11), .rst(rst));
+
+   assign d12 = lr|rst ? din[415:384] : q11 ;
+   latchD32          l12 (.d(d12), .q(q12), .clk(clk12));
+   C300R3044r1_load lc12 (.clk(clk12), .ld_run(w0), .local_clk(ck12), .rst(rst)) ;
+   C300R3044r1       c12 (.lr(r12), .la(a12), .rr(r13), .ra(a13), .ck(ck12), .rst(rst));
+
+   assign d13 = lr|rst ? din[447:416] : q12 ;
+   latchD32          l13 (.d(d13), .q(q13), .clk(clk13));
+   C300R3044r1_load lc13 (.clk(clk13), .ld_run(w0), .local_clk(ck13), .rst(rst)) ;
+   C300R3044r1       c13 (.lr(r13), .la(a13), .rr(r14), .ra(a14), .ck(ck13), .rst(rst));
+
+   assign d14 = lr|rst ? din[479:448] : q13 ;
+   latchD32          l14 (.d(d14), .q(q14), .clk(clk14));
+   C300R3044r1_load lc14 (.clk(clk14), .ld_run(w0), .local_clk(ck14), .rst(rst)) ;
+   C300R3044r1       c14 (.lr(r14), .la(a14), .rr(r15), .ra(a15), .ck(ck14), .rst(rst));
+
+   assign d15 = lr|rst ? din[511:480] : q14 ;
+   latchD32          l15 (.d(d15), .q(q15), .clk(clk15));
+   C300R3044r1_load lc15 (.clk(clk15), .ld_run(w0), .local_clk(ck15), .rst(rst)) ;
+   C300R3044r1       c15 (.lr(r15), .la(a15), .rr(r16), .ra(a16), .ck(ck15), .rst(rst));
+
+   go64 #(counter) g64 (.lr(lr), .la(w0), .lri(r16), .lai(a16), .rr(r17), .ra(a17), .rst(rst));
+
+   latchD32        l16 (.d(q15), .q(q16), .clk(clk18));
+   C300R3044       c16 (.lr(r17), .la(a17), .rr(r18), .ra(a18), .ck(clk18), .rst(rst));
+
+   bcast_fork fk (.bi(r18), .bo0(rr), .bo1(r0), .ji0(a0), .ji1(ra), .jo(a18));
+
+   assign dout = q16 ;
+   assign la = w0 ;
 
 endmodule // ring4
 
@@ -252,7 +325,7 @@ module go64 (lr, la, lri, lai, rr, ra, rst);
 
    c_element_nand_r0a celt (.a(~done), .b(lr), .y(la), .rst_(~rst));
 
-   count64  # (counter)  c64  (.clk(rr), .done(done), .rst(rst));
+   count64  # (counter)  c64  (.clk(rr), .done(done), .rst(lr));
 
    OAI21_C            g640 (.A1(la), .A2(rr), .B(lri), .Z(rr_));
    assign #1 rr  = ~(rr_ | rst);
