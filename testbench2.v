@@ -35,7 +35,7 @@ module tb;
    integer     outfile, infile, statusI ;
 
    // The Design Under Test:  la for frequency test...
-   ring #(3) dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
+   ring #(5) dut (.lr(lr), .la(la), .rr(rr), .ra(ra), .din(DI), .dout(DO), .rst(rst));
 
 
    ///////////////////////////////////////////////////////////////
