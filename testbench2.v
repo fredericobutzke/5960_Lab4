@@ -89,9 +89,26 @@ module tb;
    	 #(hs_delay);
    	 lr = 1'b0;
 
-       #(break_time);
 
-       $finish;
+    while (cycle_time < 0.01 || ($realtime - last_rr_up_time) < (3 * cycle_time)) begin
+       #(step_time);
+    end
+    $display("Finished message schedule");
+
+    if ($feof(infile)) begin
+       $display("... input stream terminated ...");
+       done = 1;
+    end
+    if ($realtime >= break_time) begin
+       done = 1;
+    end
+
+      end
+   end // initial begin
+
+   //    #(break_time);
+
+     //  $finish;
 
    end // initial begin
    
