@@ -20,9 +20,8 @@ module ring (rr, la, dout, lr, ra, din, rst);
    wire  ck0, ck1, ck2, ck3, ck4;
    wire  clk0, clk1, clk2, clk3;
 
-   sigma0 s0 (q4, d0) ;
-
    //d0 = rst ? din[] : q3 ;
+   assign d0 = q4 ;
    latchD32      l0 (.d(d0), .q(q0), .clk(ck0));
    C300R3044    c0 (.lr(r0), .la(a0), .rr(r1), .ra(a1), .ck(ck0), .rst(rst));
 
@@ -290,8 +289,8 @@ module sigma0 (A, Z);
    // R^7 ^ R^18 ^ S^3
    // due to three bit shift, only xor top three bits of rotated words
    // then xor the rest of the bits with all three shifts
-   assign #1 Z[31:29] = A[6:4] ^ A[17:15];
-   assign #1 Z[28:0] = {A[3:0], A[31:7]} ^ {A[14:0],A[31:18]} ^ A[31:3];
+   assign Z[31:29] = A[6:4] ^ A[17:15];
+   assign Z[28:0] = {A[3:0], A[31:7]} ^ {A[14:0],A[31:18]} ^ A[31:3];
 
 endmodule
 
