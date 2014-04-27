@@ -17,10 +17,11 @@ module tb;
    // simulation variables
    parameter hs_delay		  = 0.150;
 
-   parameter reset_time           = 5;
-   parameter break_time		     = 5000;
-   parameter step_time            = 1;
-   integer   done                 = 0;
+   parameter   reset_time           = 5;
+   parameter   break_time		     = 5000;
+   parameter   step_time            = 1;
+   integer     done                 = 0;
+   integer     i                    = 1;
 
    // input cycle time calculations
    real cycle_time      = 0.0;
@@ -102,7 +103,7 @@ module tb;
        while (cycle_time < 0.01 || ($realtime - last_rr_up_time) < (3 * cycle_time)) begin
           #(step_time);
        end
-       $display("Finished message schedule");
+       $display("\nFinished message schedule");
 
        if ($feof(infile)) begin
           $display("... input stream terminated ...");
@@ -131,14 +132,15 @@ module tb;
       statusI = $fscanf(goldenfile,"%h\n",exp);
 
       if (DO !== exp) begin
-         $display("%0dns Error : input and output does not match",$time);
+         $display("%0dns Error : output%d does not match",$time, i);
          $display("       Got  %h",DO);
-         $display("       Exp  %h",exp);
+         $display("    Golden  %h",exp);
       end else begin
-         $display("%0dns Match : input and output match",$time);
+         $display("%0dns Match : output%d match",$time, i);
          $display("       Got  %h",DO);
-         $display("       Exp  %h",exp);
+         $display("    Golden  %h",exp);
       end
+      i = i + 1;
    end
 
    always @ (negedge rr) begin
