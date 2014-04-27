@@ -72,7 +72,6 @@ module tb;
       // read in initial value to allow test for $feof() on last read
      statusI = $fscanf(infile,"%h", DI);
 
-
       #0.001;
       rst = 1'b1;
       lr = 1'b0;
@@ -81,34 +80,39 @@ module tb;
       #(reset_time);
       rst = 1'b0;
       
-   	 // perform handshake and data transfer
-   	 lr = 1'b1;
-   	 while (la != 1'b1) begin
-   	    #0.001;
-   	 end
-   	 #(hs_delay);
-   	 lr = 1'b0;
+   // evaluate termination conditions
+    forever begin
 
+       if (done) begin
+          $display("Terminating simulation due to run time limit\n");
+          $display("Max Cycle Time:           %.3f", cycle_time);
+          $fclose(outfile);
+          $fclose(infile);
+          $finish;
+       end
+         
+       // perform handshake and data transfer
+       lr = 1'b1;
+       while (la != 1'b1) begin
+          #0.001;
+       end
+       #(hs_delay);
+       lr = 1'b0;
+       
+       while (cycle_time < 0.01 || ($realtime - last_rr_up_time) < (3 * cycle_time)) begin
+          #(step_time);
+       end
+       $display("Finished message schedule");
 
-    while (cycle_time < 0.01 || ($realtime - last_rr_up_time) < (3 * cycle_time)) begin
-       #(step_time);
-    end
-    $display("Finished message schedule");
+       if ($feof(infile)) begin
+          $display("... input stream terminated ...");
+          done = 1;
+       end
+       if ($realtime >= break_time) begin
+          done = 1;
+       end
 
-    if ($feof(infile)) begin
-       $display("... input stream terminated ...");
-       done = 1;
-    end
-    if ($realtime >= break_time) begin
-       done = 1;
-    end
-
-      end
-   end // initial begin
-
-   //    #(break_time);
-
-     //  $finish;
+   end
 
    end // initial begin
    
